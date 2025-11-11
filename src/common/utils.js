@@ -84,3 +84,49 @@ export const saveCoverImage = async (base64Data, bookId) => {
     throw error;
   }
 };
+
+
+/**
+ * 将时间戳转换为正常可读的时间字符串
+ * @param {number|string} timestamp - 时间戳，可以是秒级或毫秒级
+ * @param {string} format - 时间格式，默认为 'YYYY-MM-DD HH:mm:ss'
+ * @returns {string} 格式化后的时间字符串
+ */
+export const formatTime = (timestamp, format = 'YYYY-MM-DD HH:mm:ss') => {
+  // 处理边界情况
+  if (!timestamp && timestamp !== 0) {
+    return '--';
+  }
+  
+  // 确保timestamp是数字类型
+  let ts = Number(timestamp);
+  
+  // 检查是否为秒级时间戳（长度通常为10位）
+  if (String(timestamp).length === 10) {
+    ts *= 1000; // 转换为毫秒级时间戳
+  }
+  
+  try {
+    const date = new Date(ts);
+    
+    // 获取各时间部分
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    // 替换格式字符串中的占位符
+    return format
+      .replace('YYYY', year)
+      .replace('MM', month)
+      .replace('DD', day)
+      .replace('HH', hours)
+      .replace('mm', minutes)
+      .replace('ss', seconds);
+  } catch (error) {
+    console.error('时间戳转换失败:', error);
+    return '--';
+  }
+};

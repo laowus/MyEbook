@@ -5,9 +5,11 @@ import { storeToRefs } from "pinia";
 import { ElMessage, ElMessageBox } from "element-plus";
 import EventBus from "../common/EventBus";
 import { join, appDataDir } from "@tauri-apps/api/path";
+import { relaunch } from "@tauri-apps/plugin-process";
 import { loadImage } from "../common/utils";
 import { useAppStore } from "../store/appStore";
 import { useBookStore } from "../store/bookStore";
+import { formatTime } from "../common/utils";
 const { historyViewShow, editBookShow } = storeToRefs(useAppStore());
 const { setEditBookData, hideHistoryView } = useAppStore();
 const { setMetaData, setToc, setFirst } = useBookStore();
@@ -112,13 +114,7 @@ const resetData = () => {
                   type: "success",
                   message: "数据清除成功!",
                 });
-                invoke("restart_app")
-                  .then(() => {
-                    console.log("App is restarting...");
-                  })
-                  .catch((error) => {
-                    console.error("Error restarting app:", error);
-                  });
+                relaunch();
               })
               .catch((error) => {
                 console.error("Error clearing app data:", error);
@@ -153,8 +149,12 @@ const resetData = () => {
     <el-table :data="books">
       <el-table-column property="id" label="id" width="50" />
       <el-table-column property="title" label="书名" width="150" />
-      <el-table-column property="author" label="作者" width="100" />
-      <el-table-column property="createTime" label="创建时间" width="100" />
+      <el-table-column property="author" label="作者" width="80" />
+      <el-table-column label="创建时间">
+        <template #default="scope">
+          {{ formatTime(scope.row.create_time) }}
+        </template>
+      </el-table-column>
       <el-table-column fixed="right" label="操作" min-width="200">
         <template #default="scope">
           <el-button

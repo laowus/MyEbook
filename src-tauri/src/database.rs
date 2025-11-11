@@ -126,6 +126,8 @@ pub struct Book {
     pub author: String,
     pub description: String,
     pub toc: String,
+    pub create_time: String,
+    pub update_time: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -170,6 +172,8 @@ pub async fn add_book(
                 author: author.clone(),
                 description: description.clone(),
                 toc: toc.clone(),
+                create_time: current_time.clone(),
+                update_time: current_time.clone(),
             };
 
             Ok(DbResponse::success(book))
@@ -228,6 +232,8 @@ pub fn get_all_books(state: State<'_, AppState>) -> Result<DbResponse<Vec<Book>>
             author: row.get(2)?,
             description: row.get(3)?,
             toc: row.get(4)?,
+            create_time: row.get(6)?,
+            update_time: row.get(7)?,
         })
     }) {
         Ok(rows) => {

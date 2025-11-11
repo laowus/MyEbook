@@ -6,7 +6,7 @@ import { useAppStore } from "../store/appStore";
 import { useBookStore } from "../store/bookStore";
 const { curChapter } = storeToRefs(useBookStore());
 const { updateTocByHref } = useBookStore();
-const { showEditView, hideEditView } = useAppStore();
+const { hideEditView } = useAppStore();
 const { editViewShow } = storeToRefs(useAppStore());
 // 创建一个新的响应式变量
 const newLabel = ref(curChapter.value.label);
@@ -23,17 +23,14 @@ const updateLabel = async () => {
   hideEditView();
 };
 watch(curChapter, (newVal, oldVal) => {
-  if (editViewShow.value) {
-    newLabel.value = newVal.label;
-  }
+  newLabel.value = newVal.label;
 });
 </script>
 <template>
   <el-dialog v-model="editViewShow" title="修改标题" width="400">
-    <el-form>
-      <el-form-item label="标题名">
-        <el-input v-model="newLabel" /> </el-form-item
-    ></el-form>
+    <el-form-item label="标题名">
+      <el-input v-model="newLabel" @keyup.enter="updateLabel" />
+    </el-form-item>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="hideEditView">关闭</el-button>

@@ -39,26 +39,36 @@ export const useBookStore = defineStore("bookStore", {
     },
     delTocByHref(href) {
       const removeItem = (items) => {
+        // 处理边界情况
+        if (!items || !Array.isArray(items)) return false;
+        // 循环 toc
         for (let i = items.length - 1; i >= 0; i--) {
           const item = items[i];
           if (item.href === href) {
+            // 获取删除后, 需要重新渲染的项目(显示被选中的项目)
             let refItem = null;
-            //加入只有一个元素
-            if (i === 0) {
-              refItem = this.findParentByHref(item.href);
-            } else {
-              // 若前一个元素不存在，尝试获取后一个元素
-              refItem = items[i - 1];
-              if (!refItem) {
-                //如果前一个元素也不存在 再获取后一个元素
-                refItem = item[i + 1];
-              }
+            // 如果不是最后一个元素，优先选择后一个元素作为参考
+            if (i < items.length - 1) {
+              refItem = items[i + 1];
             }
+            // 如果没有后一个元素，选择前一个元素
+            else if (i > 0) {
+              refItem = items[i - 1];
+            }
+            // 如果是唯一元素，则尝试查找父元素
+            else {
+              refItem = this.findParentByHref(item.href);
+            }
+
+            // 从数组中删除元素
             items.splice(i, 1);
-            // 触发更新目录事件，若 refItem 不存在则传入 null
+
+            // 触发更新目录事件，传入参考项的href或null
             EventBus.emit("updateToc", refItem ? refItem.href : null);
             return true;
           }
+
+          // 递归处理子项
           if (item.subitems && item.subitems.length > 0) {
             if (removeItem(item.subitems)) {
               return true;
@@ -67,6 +77,10 @@ export const useBookStore = defineStore("bookStore", {
         }
         return false;
       };
+
+      // 确保toc存在且为数组
+      if (!this.toc || !Array.isArray(this.toc)) return;
+
       removeItem(this.toc);
     },
     // 插入数据库中 并更新目录以及当前章节
