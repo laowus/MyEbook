@@ -1,6 +1,6 @@
 [package]
 name = "myebook"
-version = "0.1.0"
+version = "0.1.1"
 description = "捡书 2.0"
 authors = ["黄老五"]
 edition = "2021"
@@ -33,3 +33,4 @@ zip = "0.6"
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"
 tauri-plugin-window-state = "2"
+tauri-plugin-updater = "2"

@@ -12,7 +12,7 @@ const { aboutShow } = storeToRefs(useAppStore());
 const tindex = ref(0);
 let dataDir = "";
 
-const tabs = ref(["软件介绍", "捐赠支持", "备份/恢复"]);
+const tabs = ref(["软件介绍", "捐赠支持", "备份/恢复", "更新"]);
 const tabContents = ref([
   `
   MyEbook（捡书） 是一个基于 Vue3 + Tauri 开发的跨平台电子书编辑器，支持 macOS、Windows、Linux 等操作系统。(本人只有Windows系统电脑, 其他没有平台测试。)
@@ -33,6 +33,90 @@ const tabContents = ref([
   MyEbook，请考虑通过捐赠来支持该项目。您的捐赠将帮助我维护和改进这个项目。`,
 ]);
 
+// 应用信息
+const appInfo = ref({ version: "", name: "" });
+// 更新状态
+const updateStatus = ref({
+  available: false,
+  version: "",
+  body: "",
+  downloading: false,
+  update: null, // 存储更新对象
+});
+const message = ref("");
+
+async function fetchAppInfo() {
+  try {
+    const info = await invoke("get_app_info");
+    appInfo.value = info;
+  } catch (error) {
+    console.error("获取应用信息失败:", error);
+  }
+}
+
+// 检查更新 - 使用后端API
+async function checkUpdates() {
+  try {
+    message.value = "正在检查更新...";
+    // 使用后端API
+    const result = await invoke("check_for_updates");
+
+    if (result.update_available) {
+      updateStatus.value.available = true;
+      updateStatus.value.version = result.new_version;
+      updateStatus.value.body = result.body;
+      message.value = `发现新版本: ${result.new_version}`;
+
+      // 如果有调试信息，显示出来
+      if (result.debug_message) {
+        message.value += ` (${result.debug_message})`;
+      }
+    } else {
+      message.value = "已是最新版本";
+    }
+  } catch (error) {
+    console.error("检查更新错误:", error);
+    message.value = `检查更新失败: ${error}`;
+  }
+}
+// 下载并安装更新 - 使用原生API
+async function downloadAndInstall() {
+  try {
+    message.value = "正在下载更新...";
+    updateStatus.value.downloading = true;
+
+    // 使用原生check方法获取更新对象
+    const update = await check();
+
+    let downloaded = 0;
+    let contentLength = 0;
+
+    await update.downloadAndInstall((event) => {
+      switch (event.event) {
+        case "Started":
+          contentLength = event.data.contentLength;
+          message.value = `开始下载 ${event.data.contentLength} 字节`;
+          break;
+        case "Progress":
+          downloaded += event.data.chunkLength;
+          const progress = Math.round((downloaded / contentLength) * 100);
+          message.value = `下载进度: ${progress}% (${downloaded}/${contentLength} 字节)`;
+          break;
+        case "Finished":
+          message.value = "下载完成，准备安装...";
+          break;
+      }
+    });
+
+    message.value = "更新下载完成，即将重启应用...";
+    await relaunch();
+  } catch (error) {
+    console.error("下载安装更新错误:", error);
+    message.value = `下载安装失败: ${error.message || error}`;
+    updateStatus.value.downloading = false;
+  }
+}
+
 // 切换标签的函数
 const changeTab = (index) => {
   tindex.value = index;
@@ -40,6 +124,7 @@ const changeTab = (index) => {
 
 onMounted(async () => {
   dataDir = await appDataDir();
+  fetchAppInfo();
 });
 
 //把应用目录下面的所有文件都打包成一个zip文件
@@ -217,7 +302,6 @@ const openDataDir = async () => {
             QQ群：616712461 <br />
           </p>
         </div>
-
         <div v-else-if="tindex === 1" class="content-item">
           {{ tabContents[1] }}
           <div class="payment-methods">
@@ -274,12 +358,42 @@ const openDataDir = async () => {
             </div>
           </div>
         </div>
+        <div v-else-if="tindex === 3" class="content-item">
+          <div class="update-section">
+            <div>当前版本: {{ appInfo.version }}</div>
+            <div>
+              <el-button
+                type="primary"
+                @click="checkUpdates"
+                :disabled="updateStatus.downloading"
+              >
+                检查更新
+              </el-button>
+              <el-button
+                type="success"
+                @click="downloadAndInstall"
+                v-if="updateStatus.available && !updateStatus.downloading"
+              >
+                下载并安装更新 ({{ updateStatus.version }})
+              </el-button>
+            </div>
+            <div>
+              <p>{{ message }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </el-dialog>
 </template>
 
 <style scoped>
+.update-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .backup-restore {
   display: flex;
   flex-direction: column;

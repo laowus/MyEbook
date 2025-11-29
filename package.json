@@ -1,7 +1,7 @@
 {
   "name": "myebook",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "pdev": "pnpm tauri dev",
@@ -19,6 +19,7 @@
     "@tauri-apps/plugin-os": "^2.3.1",
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-process": "^2.3.0",
+    "@tauri-apps/plugin-updater": "^2.9.0",
     "@zip.js/zip.js": "^2.8.8",
     "chardet": "^2.1.0",
     "element-plus": "^2.9.8",

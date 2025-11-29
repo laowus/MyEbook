@@ -36,6 +36,10 @@
     "dialog:default",
     "dialog:allow-open",
     "core:window:allow-start-dragging",
+    "updater:default",
+    "updater:allow-check",
+    "updater:allow-download",
+    "updater:allow-install",
     {
       "identifier": "fs:allow-read",
       "allow": [
