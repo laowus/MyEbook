@@ -51,7 +51,7 @@
   "plugins": {
     "updater": {
       "active": true,
-      "endpoints": ["https://gitee.com/laowus/myebook/raw/master/latest.json"],
+      "endpoints": ["https://gitee.com/laowus/MyEbook/raw/main/latest.json"],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhDNDE4MEMyRkIyNTI0M0MKUldROEpDWDd3b0JCakt5WkZ2VGdXWTgwSlFVOVRTejJiOWFHbVdjMlJjQ3lzd2N5WG1DdjZkOTMK"
     }
