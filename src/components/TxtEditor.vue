@@ -297,7 +297,7 @@ const getFormattedContent = async (content) => {
             const imagePath = line.match(/src="([^"]+)"/)[1];
             const absoluteImagePath = await join(
               imageDir,
-              imagePath.replace("images/", "")
+              imagePath.replace("../images/", "")
             );
             const imageUrl = convertFileSrc(absoluteImagePath);
             line = line.replace(/src="[^"]+"/, `src="${imageUrl}"`);
@@ -374,7 +374,7 @@ const addImage = async () => {
     await copyFile(selected, newPath);
     console.log(`图片 ${newFileName} 已成功复制到 ${imageDir}`);
     // 插入图片标签到当前位置
-    const imageTag = `<img src="images/${newFileName}" />`;
+    const imageTag = `<img src="../images/${newFileName}" />`;
     const textarea = editArea.value;
     const { selectionStart, selectionEnd, value } = textarea;
     const newContent =

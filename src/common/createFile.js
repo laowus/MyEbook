@@ -14,7 +14,7 @@ const generateNavPoints = (chapters, parentPlayOrder = 1) => {
                   <navLabel>
                     <text>${chapter.label}</text>
                   </navLabel>
-                  <content src="./OEBPS/${id}.html" />`;
+                  <content src="Text/${id}.html" />`;
     if (chapter.subitems && chapter.subitems.length > 0) {
       const subNavPoints = generateNavPoints(
         chapter.subitems,
@@ -82,7 +82,7 @@ export const createEpub = async (metadata, chapters) => {
         ` <?xml version="1.0" encoding="UTF-8"?>
             <container xmlns="urn:oasis:names:tc:opendocument:xmlns:container" version="1.0">
                 <rootfiles>
-                <rootfile full-path="content.opf" media-type="application/oebps-package+xml"/>
+                <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
                 </rootfiles>
             </container>`.trim()
       );
@@ -96,7 +96,7 @@ export const createEpub = async (metadata, chapters) => {
         const imageFiles = await readDir(imagesDir);
         if (imageFiles && imageFiles.length > 0) {
           for (const file of imageFiles) {
-            imagesList.push(`OEBPS/images/${file.name}`);
+            imagesList.push(`images/${file.name}`);
             const filePath = await join(imagesDir, file.name);
             const imgData = await readFile(filePath);
             zip.folder("OEBPS").folder("images").file(file.name, imgData);
@@ -107,7 +107,7 @@ export const createEpub = async (metadata, chapters) => {
       const navPoints = generateNavPoints(chapters).join("\n");
 
       // 目录页面
-      zip.folder("").file(
+      zip.folder("OEBPS").file(
         "toc.ncx",
         ` <?xml version="1.0" encoding="UTF-8"?>
             <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
@@ -134,14 +134,14 @@ export const createEpub = async (metadata, chapters) => {
       // 生成 manifest
       const manifestItems = flatChapters.map(
         (chapter, index) => `
-        <item id="chap${chapter.href}" href="OEBPS/chapter${chapter.href}.html" media-type="application/xhtml+xml"/>
+        <item id="chap${chapter.href}" href="Text/chapter${chapter.href}.html" media-type="application/xhtml+xml"/>
     `
       );
 
       if (isCoverExists) {
         manifestItems.push(`
-          <item id="cover-image" href="OEBPS/cover.jpg" media-type="image/jpeg"/>
-          <item id="cover" href="OEBPS/cover.html" media-type="application/xhtml+xml"/>
+          <item id="cover-image" href="cover.jpg" media-type="image/jpeg"/>
+          <item id="cover" href="Text/cover.html" media-type="application/xhtml+xml"/>
         `);
       }
       // 添加图片到 manifest
@@ -167,8 +167,8 @@ export const createEpub = async (metadata, chapters) => {
 
       // 生成封面页面
       if (isCoverExists) {
-        const coverFileName = "cover.jpg";
-        zip.folder("OEBPS").file(
+        const coverFileName = "../cover.jpg";
+        zip.folder("OEBPS/Text").file(
           "cover.html",
           `<?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -204,7 +204,7 @@ export const createEpub = async (metadata, chapters) => {
             ? formatText(result.data[0].content)
             : "";
 
-          zip.folder("OEBPS").file(
+          zip.folder("OEBPS/Text").file(
             `chapter${chapter.href}.html`,
             `<?xml version="1.0" encoding="UTF-8"?>
                 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -227,7 +227,7 @@ export const createEpub = async (metadata, chapters) => {
         .then(() => {
           const tocManifest = `<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>`;
           // 生成 content.opf
-          zip.folder("").file(
+          zip.folder("OEBPS").file(
             "content.opf",
             `<?xml version="1.0" encoding="UTF-8"?>
             <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="book-id" version="2.0">

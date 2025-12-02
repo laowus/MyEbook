@@ -103,7 +103,7 @@ export const openFile = async (file) => {
         //插入书籍
         let _metaData = {
           title: book.metadata.title || "未命名",
-          author: book.metadata.author.name || "佚名",
+          author: book.metadata.author?.[0]?.name || "佚名",
           description: book.metadata.description || "暂缺",
           toc: "",
         };
@@ -216,7 +216,7 @@ const getTextFromHTML = (htmlString, imageMap = null) => {
           const fileName = parts[parts.length - 1];
           const bn = fileName;
           if (src.includes(bn)) {
-            node.setAttribute("src", newPath);
+            node.setAttribute("src", "../" + newPath);
             found = true;
             break;
           }
