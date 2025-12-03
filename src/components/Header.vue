@@ -4,7 +4,7 @@ import { save } from "@tauri-apps/plugin-dialog";
 import { join, appDataDir } from "@tauri-apps/api/path";
 import { writeFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { relaunch } from "@tauri-apps/plugin-process";
-import { ref, onMounted, toRaw } from "vue";
+import { ref, reactive, onMounted, toRaw, nextTick } from "vue";
 import { storeToRefs } from "pinia";
 import * as OpenCC from "opencc-js";
 import WindowCtr from "./WindowCtr.vue";
@@ -40,13 +40,12 @@ const changeTab = (index) => {
 };
 
 const isfang = ref(false);
-const filesToSort = ref([]);
-// 正则表达式
-const reg = {
+
+const reg = reactive({
   pre: pre.value,
   aft: after.value,
-  selected: [1, 1],
-};
+  selected: [0, 0],
+});
 const strNum = ref(20);
 const initDom = () => {
   $("#add-file").addEventListener("change", (e) => {
@@ -135,7 +134,32 @@ const addFileAsync = async (newFile) => {
 
 onMounted(() => {
   initDom();
+  initPreAfter();
 });
+
+const initPreAfter = () => {
+  EventBus.on("updatePreAfter", () => {
+    console.log("更新 reg", pre.value, after.value);
+    // 直接更新响应式对象的属性
+    reg.pre.length = 0;
+    reg.pre.push(...pre.value);
+    
+    reg.aft.length = 0;
+    reg.aft.push(...after.value);
+    
+    // 重置选中状态
+    reg.selected = [0, 0];
+    
+    // 等待 DOM 更新后重新设置 select 的选中值
+    nextTick(() => {
+      const preSelect = document.getElementById('pre');
+      const aftSelect = document.getElementById('aft');
+      if (preSelect) preSelect.selectedIndex = 0;
+      if (aftSelect) aftSelect.selectedIndex = 0;
+      console.log("select 更新完成");
+    });
+  });
+};
 
 const restart = () => {
   ElMessageBox.confirm("确定要重启应用吗？", "重启应用", {
@@ -406,8 +430,6 @@ const convertLabels = (items, coverter) => {
     }
   });
 };
-
-// toc 转换 coverter
 
 const regString = () => {
   const pre = $("#pre").value;
@@ -857,19 +879,13 @@ EventBus.on("addFiles", async () => {
           <div class="reg-string">
             <span>规则:</span>
             <select id="pre">
-              <option
-                v-for="(pr, index) in reg.pre"
-                :selected="reg.selected[0] == index"
-              >
+              <option v-for="(pr, index) in reg.pre">
                 {{ pr }}
               </option>
             </select>
             <span>[数字]</span>
             <select id="aft">
-              <option
-                v-for="(af, index) in reg.aft"
-                :selected="reg.selected[1] == index"
-              >
+              <option v-for="(af, index) in reg.aft">
                 {{ af }}
               </option>
             </select>

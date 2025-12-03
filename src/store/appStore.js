@@ -97,6 +97,10 @@ export const useAppStore = defineStore("appStore", {
     hideFileList() {
       this.fileListShow = false;
     },
+    setPreAfter(preArray, afterArray) {
+      this.pre = preArray;
+      this.after = afterArray;
+    },
   },
   persist: {
     enabled: true,
