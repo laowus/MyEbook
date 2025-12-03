@@ -1,56 +1,53 @@
 <script setup>
-import { ref, watch } from "vue";
-
+import { ref, watch, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useAppStore } from "../store/appStore";
 
 const { settingShow, pre, after } = storeToRefs(useAppStore());
 const { setPreAfter } = useAppStore();
 
-// 本地数组数据
-const preArray = ref([]);
-const afterArray = ref([]);
+// 字符串形式的输入
+const preString = ref("");
+const afterString = ref("");
+
+// 预览数组
+const prePreview = computed(() => {
+  return preString.value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
+});
+
+const afterPreview = computed(() => {
+  return afterString.value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
+});
 
 // 监听弹窗打开，初始化数据
 watch(settingShow, (newVal) => {
   if (newVal) {
-    // 弹窗打开时，复制store中的数据到本地
-    preArray.value = [...pre.value];
-    afterArray.value = [...after.value];
+    // 弹窗打开时，将数组转换为逗号分隔的字符串
+    preString.value = pre.value.join(", ");
+    afterString.value = after.value.join(", ");
   }
 });
 
-// 添加前缀项
-const addPreItem = () => {
-  preArray.value.push("");
-};
-
-// 删除前缀项
-const removePreItem = (index) => {
-  if (preArray.value.length > 1) {
-    preArray.value.splice(index, 1);
-  }
-};
-
-// 添加后缀项
-const addAfterItem = () => {
-  afterArray.value.push("");
-};
-
-// 删除后缀项
-const removeAfterItem = (index) => {
-  if (afterArray.value.length > 1) {
-    afterArray.value.splice(index, 1);
-  }
-};
 
 // 保存设置
 const saveSettings = () => {
-  // 过滤空值并保存到store
-  const filteredPre = preArray.value.filter((item) => item.trim() !== "");
-  const filteredAfter = afterArray.value.filter((item) => item.trim() !== "");
+  // 将字符串转换为数组，过滤空值
+  const preArray = preString.value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
+  const afterArray = afterString.value
+    .split(",")
+    .map((item) => item.trim())
+    .filter((item) => item !== "");
 
-  setPreAfter(filteredPre, filteredAfter);
+  setPreAfter(preArray, afterArray);
   settingShow.value = false;
 };
 
@@ -59,62 +56,45 @@ const cancelSettings = () => {
   settingShow.value = false;
 };
 </script>
+
 <template>
   <el-dialog v-model="settingShow" title="设置" width="60%">
-    <!-- 前后缀数组管理 -->
     <div class="setting-section">
-      <h4>前缀管理</h4>
-      <div class="array-manager">
-        <div
-          v-for="(item, index) in preArray"
+      <h4>前缀设置</h4>
+      <el-input
+        v-model="preString"
+        placeholder="请输入前缀，用逗号分隔，如：第,卷,chapter"
+      />
+      <div class="preview-section">
+        <span>预览: </span>
+        <el-tag
+          v-for="(item, index) in prePreview"
           :key="'pre-' + index"
-          class="array-item"
+          size="small"
+          style="margin-right: 5px; margin-top: 5px"
         >
-          <el-input
-            v-model="preArray[index]"
-            placeholder="输入前缀"
-            size="small"
-          />
-          <el-button
-            size="small"
-            type="danger"
-            @click="removePreItem(index)"
-            :disabled="preArray.length <= 1"
-          >
-            删除
-          </el-button>
-        </div>
-        <el-button size="small" type="primary" @click="addPreItem">
-          添加前缀
-        </el-button>
+          {{ item }}
+        </el-tag>
       </div>
     </div>
 
     <div class="setting-section">
-      <h4>后缀管理</h4>
-      <div class="array-manager">
-        <div
-          v-for="(item, index) in afterArray"
+      <h4>后缀设置</h4>
+      <el-input
+        v-model="afterString"
+        placeholder="请输入后缀，用逗号分隔，如：章,回,节,集"
+      />
+      <div class="preview-section">
+        <span>预览: </span>
+        <el-tag
+          v-for="(item, index) in afterPreview"
           :key="'after-' + index"
-          class="array-item"
+          size="small"
+          type="warning"
+          style="margin-right: 5px; margin-top: 5px"
         >
-          <el-input
-            v-model="afterArray[index]"
-            placeholder="输入后缀"
-            size="small"
-          />
-          <el-button
-            size="small"
-            type="danger"
-            @click="removeAfterItem(index)"
-            :disabled="afterArray.length <= 1"
-          >
-            删除
-          </el-button>
-        </div>
-        <el-button size="small" type="primary" @click="addAfterItem">
-          添加后缀
-        </el-button>
+          {{ item }}
+        </el-tag>
       </div>
     </div>
 
@@ -136,21 +116,16 @@ const cancelSettings = () => {
   font-size: 16px;
 }
 
-.array-manager {
-  border: 1px solid #e4e7ed;
+.preview-section {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f5f7fa;
   border-radius: 4px;
-  padding: 15px;
-  background-color: #fafafa;
+  min-height: 40px;
 }
 
-.array-item {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-  align-items: center;
-}
-
-.array-item .el-input {
-  flex: 1;
+.preview-section span {
+  font-weight: 500;
+  color: #606266;
 }
 </style>
