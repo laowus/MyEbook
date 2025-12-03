@@ -24,7 +24,7 @@ const tabContents = ref([
          点击分割按钮就会进行分割成多段文字。
       3、可以对导入的文字进行简单编辑，譬如消除空行，段落首行缩进。
 
-  开源地址：<button @click='openUrl'>https://github.com/laowus/MyEbook</button>
+  开源地址：<button @click='openUrl'>https://gitee.com/laowus/MyEbook</button>
   如有问题可以以下方式进行联系：
       邮箱：pjhxl@qq.com
       Q Q：37156760

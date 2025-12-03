@@ -21,7 +21,17 @@ const { curChapter, metaData, isFirst, toc, isAllEdit, isTitleIn } =
   storeToRefs(useBookStore());
 const { setMetaData, setFirst, setIsAllEdit, setTitleIn, setToc } =
   useBookStore();
-const { showHistoryView, showNewBook, showAbout } = useAppStore();
+const {
+  showHistoryView,
+  showNewBook,
+  showAbout,
+  showFileList,
+  setFileListData,
+} = useAppStore();
+
+const { fileListData, fileListShow, pre, after, settingShow } = storeToRefs(
+  useAppStore()
+);
 
 const curIndex = ref(1);
 const indentNum = ref(2);
@@ -30,62 +40,26 @@ const changeTab = (index) => {
 };
 
 const isfang = ref(false);
-
+const filesToSort = ref([]);
 // 正则表达式
 const reg = {
-  pre: ["", "第", "卷", "chapter"],
-  aft: ["", "章", "回", "节", "集", "部", "篇", "部分"],
+  pre: pre.value,
+  aft: after.value,
   selected: [1, 1],
 };
 const strNum = ref(20);
 const initDom = () => {
   $("#add-file").addEventListener("change", (e) => {
-    // 检查用户是否选择了文件
     if (e.target.files.length > 0) {
-      const newFile = e.target.files[0];
-      const ext = newFile.name.split(".").pop();
-      if (ext === "txt" || ext === "html") {
-        let fileStr = "";
-        readTxtFile(newFile).then((data) => {
-          fileStr = ext === "html" ? getTextFromHTML(data) : data;
-          console.log("fileStr", fileStr);
-          if (isFirst.value) {
-            const meta = {
-              title: newFile.name.split(".")[0],
-              author: "Unknown",
-              description: "Unknown",
-              toc: "",
-            };
-            invoke("add_book", meta)
-              .then((res) => {
-                meta.bookId = res.data.id;
-                setMetaData(meta);
-                const chapter = {
-                  bookId: metaData.value.bookId,
-                  label: metaData.value.title,
-                  href: `OPS/chapter-${Date.now()}`,
-                  content: fileStr,
-                };
-                EventBus.emit("addChapter", { href: null, chapter: chapter });
-                setFirst(false);
-              })
-              .catch((err) => {
-                console.error("插入book表失败:", err);
-              });
-          } else {
-            const chapter = {
-              bookId: metaData.value.bookId,
-              label: newFile.name.split(".")[0],
-              href: `OPS/chapter-${Date.now()}`,
-              content: fileStr,
-            };
-            EventBus.emit("addChapter", { href: null, chapter: chapter });
-          }
-        });
-      } else if (ext === "epub" || ext === "mobi") {
-        openFile(newFile).then((res) => {
-          console.log(" 02 open", res);
-        });
+      // 将FileList转换为数组以便操作
+      const files = Array.from(e.target.files);
+      // 如果只选择了一个文件，直接导入
+      if (files.length === 1) {
+        addFile(files[0]);
+      } else if (files.length > 1) {
+        // 如果选择了多个文件，显示排序对话框
+        setFileListData(files);
+        showFileList(true);
       }
       e.target.value = "";
     } else {
@@ -94,6 +68,69 @@ const initDom = () => {
   });
 
   $("#add-file-btn").addEventListener("click", () => $("#add-file").click());
+};
+
+const addFile = (newFile) => {
+  addFileAsync(newFile).catch((err) => console.error("添加文件失败:", err));
+};
+
+const addFileAsync = async (newFile) => {
+  const ext = newFile.name.split(".").pop();
+  if (ext === "txt" || ext === "html") {
+    let fileStr = "";
+    const data = await readTxtFile(newFile);
+    fileStr = ext === "html" ? getTextFromHTML(data) : data;
+
+    if (isFirst.value) {
+      const meta = {
+        title: newFile.name.split(".")[0],
+        author: "Unknown",
+        description: "Unknown",
+        toc: "",
+      };
+      const res = await invoke("add_book", meta);
+      meta.bookId = res.data.id;
+      setMetaData(meta);
+      const chapter = {
+        bookId: metaData.value.bookId,
+        label: metaData.value.title,
+        href: `OPS/chapter-${Date.now()}`,
+        content: fileStr,
+      };
+
+      // 等待章节添加完成
+      await new Promise((resolve) => {
+        const successListener = () => {
+          EventBus.off("addChapterRes", successListener);
+          resolve();
+        };
+        EventBus.on("addChapterRes", successListener);
+        EventBus.emit("addChapter", { href: null, chapter: chapter });
+      });
+
+      setFirst(false);
+    } else {
+      const chapter = {
+        bookId: metaData.value.bookId,
+        label: newFile.name.split(".")[0],
+        href: `OPS/chapter-${Date.now()}`,
+        content: fileStr,
+      };
+
+      // 等待章节添加完成
+      await new Promise((resolve) => {
+        const successListener = () => {
+          EventBus.off("addChapterRes", successListener);
+          resolve();
+        };
+        EventBus.on("addChapterRes", successListener);
+        EventBus.emit("addChapter", { href: null, chapter: chapter });
+      });
+    }
+  } else if (ext === "epub" || ext === "mobi") {
+    const res = await openFile(newFile);
+    console.log(" 02 open", res);
+  }
 };
 
 onMounted(() => {
@@ -399,7 +436,6 @@ const regString = () => {
   // 动态拼接完整的正则表达式
   const regexPattern = `^\\s*(${chapterMatchPart}${attachPart})(.{0,${strNum}}[^\\n]?)?$`;
   const chapterRegex = new RegExp(regexPattern, "gm");
-  console.log(chapterRegex);
 
   //  保存当前章节的id和内容，用于更新当前章节 更新完后, 内容只留标题
   const tempChapter = {
@@ -414,7 +450,6 @@ const regString = () => {
     chapterRegex,
     isTitleIn.value
   );
-  console.log("章节", chapters);
   if (!Array.isArray(chapters) || chapters.length === 0) {
     ElMessage.error("未匹配到章节，请检查正则表达式");
     return;
@@ -657,6 +692,19 @@ const exportBookToTxt = async () => {
     console.error("打开选择文件对话框失败:", error);
   }
 };
+
+EventBus.on("addFiles", async () => {
+  if (fileListData.value.length > 0) {
+    console.log(fileListData.value);
+    fileListShow.value = false;
+    // 按顺序处理文件
+    for (const file of fileListData.value) {
+      await addFileAsync(file);
+    }
+    fileListData.value = null;
+    ElMessage.success("文件导入成功");
+  }
+});
 </script>
 <template>
   <div class="header">
@@ -721,6 +769,7 @@ const exportBookToTxt = async () => {
             id="add-file"
             hidden
             accept=".txt,.html,.epub,.mobi,.azw3"
+            multiple
           />
           <button class="btn-icon" id="add-file-btn">
             <span class="iconfont icon-Epub" style="color: green"></span>
@@ -852,6 +901,15 @@ const exportBookToTxt = async () => {
             >
               <span class="iconfont icon-jianqie" style="color: green"></span>
               <span>开始分割</span>
+            </button>
+
+            <button
+              class="btn-icon"
+              @click="settingShow = true"
+              :disabled="!curChapter.bookId"
+            >
+              <span class="iconfont icon-shezhi" style="color: green"></span>
+              <span>设置</span>
             </button>
           </div>
         </div>

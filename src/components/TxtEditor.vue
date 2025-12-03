@@ -233,7 +233,6 @@ const scrollRightWrapperToTop = () => {
 EventBus.on("scrollToTop", scrollRightWrapperToTop);
 
 const initPaths = async () => {
-  console.log("初始化路径");
   appDataPath = await appDataDir();
   epubDir = await join(appDataPath, "epub");
   imageDir = await join(epubDir, `${curChapter.value?.bookId}`, "images");

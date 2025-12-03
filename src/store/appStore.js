@@ -1,3 +1,4 @@
+import { file } from "jszip";
 import { defineStore } from "pinia";
 
 export const useAppStore = defineStore("appStore", {
@@ -17,9 +18,17 @@ export const useAppStore = defineStore("appStore", {
     editBookShow: false,
     editBookData: null,
     aboutShow: null,
+    fileListShow: false,
+    fileListData: null,
+    pre: ["", "第", "卷", "chapter"],
+    after: ["", "章", "回", "节", "集", "部", "篇", "部分"],
+    settingShow: false,
   }),
   getters: {},
   actions: {
+    setFileListData(data) {
+      this.fileListData = data;
+    },
     setCurrentHref(href) {
       this.currentHref = href;
     },
@@ -82,5 +91,20 @@ export const useAppStore = defineStore("appStore", {
       this.tipShow = false;
       this.tipText = null;
     },
+    showFileList() {
+      this.fileListShow = true;
+    },
+    hideFileList() {
+      this.fileListShow = false;
+    },
+  },
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        storage: localStorage,
+        paths: ["pre", "after"],
+      },
+    ],
   },
 });

@@ -10,6 +10,9 @@ import HistoryView from "./HistoryView.vue";
 import About from "./About.vue";
 import EditView from "./EditView.vue";
 import ContextMenu from "./ContextMenu.vue";
+import FileList from "./FileList.vue";
+import Setting from "./Setting.vue";
+
 const { ctxMenuShow, ctxMenuData, ctxMenuSeparatorNums, tipShow, tipText } =
   storeToRefs(useAppStore());
 const { hideCtxMenu, showCtxMenu, showTip, hideTip } = useAppStore();
@@ -76,6 +79,8 @@ EventBus.on("hideTip", (text = "完成!") => {
     <EditBook> </EditBook>
     <NewBook> </NewBook>
     <About> </About>
+    <FileList> </FileList>
+    <Setting> </Setting>
     <ContextMenu
       v-show="ctxMenuShow"
       :posStyle="ctxMenuPosStyle"
