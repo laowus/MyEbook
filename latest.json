@@ -1,11 +1,11 @@
 {
-  "version": "0.1.2",
-  "notes": "0.1.2",
-  "pub_date": "2025-11-29T05:52:39.191Z",
+  "version": "0.1.3",
+  "notes": "0.1.3",
+  "pub_date": "2025-12-04T05:52:39.191Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVROEpDWDd3b0JCakh0bjNrQzliSk1mZnUrQTZ6bFpUa3pFb0wvMWlxTklMLytydDZ5c1lXUlQzclhtZjBPSnh2R0JjN0pRWjY5RXFZTURDdWIvay9YUFhvWUR2QTFlVVFrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY0NjkyNDE3CWZpbGU65o2h5LmmTXlFYm9va18wLjEuMl94NjQtc2V0dXAuZXhlCkV2NHRTbU9hWE9UaDlJVEFSRnFoLzRJazJvOTFRNnFZQTE4OGE5ak1OdXQ3RTdBVmdNT1FTMjRpK0JUMHlxRjhsMGR2SDZFYTNsdXh0NTNKWjQwT0FnPT0K",
-      "url": "https://gitee.com/laowus/MyEbook/releases/download/0.1.2/捡书MyEbook_0.1.2_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVROEpDWDd3b0JCakpmcTdvcHNRTW9adkpqOCsyM1h5bkpYcjlTSUlRbXByNk1YTWR4UVQ1bUVNeVpsdVpkbnlHaXNrZkI5NER0emc2WXp5UkZBeTJiMDVIUTJ0WVZVVUFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzY0ODM0NjM5CWZpbGU65o2h5LmmTXlFYm9va18wLjEuM194NjQtc2V0dXAuZXhlCi84ZmlURzQ4Z3pTcWJLYnNLbUVGL1c4YmhmbFZWR1d3ZHlETHRSVG9rOWliOVVReGVKTWRyaFZseE9MRjBTUmtjbktFZ2lmRjJVblZtcXU1akZwZEN3PT0K",
+      "url": "https://gitee.com/laowus/MyEbook/releases/download/0.1.3/捡书MyEbook_0.1.3_x64-setup.exe"
     }
   }
 }

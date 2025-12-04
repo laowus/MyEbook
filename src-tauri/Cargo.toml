@@ -1,6 +1,6 @@
 [package]
 name = "myebook"
-version = "0.1.2"
+version = "0.1.3"
 description = "捡书MyEbook"
 authors = ["黄老五"]
 edition = "2021"

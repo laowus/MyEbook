@@ -2390,7 +2390,7 @@ dependencies = [
 
 [[package]]
 name = "myebook"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "base64 0.21.7",
  "rusqlite",
